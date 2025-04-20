@@ -1,4 +1,8 @@
-
+  def test_bold(self):
+                node = TextNode("This is bold text", TextType.BOLD)
+                html_node = text_node_to_html_node(node)
+                self.assertEqual(html_node.tag="b", None)
+                self.assertEqual(html_node.value, "This is bold text")
 import unittest
 from textnode_to_htmlnode import *
 from htmlnode import *
@@ -10,7 +14,32 @@ class TestTextnodeToHtmlnode(unittest.TestCase):
 		html_node = text_node_to_html_node(node)
 		self.assertEqual(html_node.tag, None)
 		self.assertEqual(html_node.value, "This is a text node")
-	
+	def test_bold(self):
+		node = TextNode("This is bold text", TextType.BOLD)
+		html_node = text_node_to_html_node(node)
+		self.assertEqual(html_node.tag, "b")
+		self.assertEqual(html_node.value, "This is bold text")
+	def test_italic(self):
+		node = TextNode("Italic text is fancy", TextType.ITALIC)
+		html_node = text_node_to_html_node(node)
+		self.assertEqual(html_node.tag, "i")
+		self.assertEqual(html_node.value, "Italic text is fancy")
+	def test_code(self):
+		node = TextNode("print(Code in html, what are we Boot.dev?"), TextType.CODE)
+		html_node = text_node_to_html_node(node)
+		self.assertEqual(html_node.tag, "code")
+		self.assertEqual(html_node.value, "print(Code in html, what are we Boot.dev?")
+	def test_link(self):
+		node = TextNode
+
+
+
+
+
+
+
+
+
 #from htmlnode import *
 #from textnode import *
 #from enum import Enum
