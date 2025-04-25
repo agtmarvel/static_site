@@ -1,63 +1,93 @@
+
 from htmlnode import *
-from textnode import *
+from text_types import TextNode, TextType
 from split_delimiter import *
 import re
-import unittests
+from enum import Enum
 
 def extract_markdown_images(text):
 	
 	pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
 	
-	matches = re.findall(r"your_pattern", text)
-	return matches
+	matches = re.findall(pattern, text)
+	result = []
+	for image_text, image_url in matches:
+		result.append((image_text, TextType.IMAGE, image_url))
+	return result
 
 def extract_markdown_links(text):
 	
 	pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
 	
-	matches = re.findall(r"your_pattern", text)
-	return matches
+	matches = re.findall(pattern, text)
+	result = []
+	for link_text, link_url in matches:
+		result.append((link_text,TextType.LINK, link_url))
 
-#tests
-
-class ExtractTests(unittest.TestCase):
-	def test_extract_mark_images(self):
-		matches = extract_markdown_images(
-			"This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
-		)
-		self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
-
-	def test_extract_multiple_markdown_images(self):
-		self.assertListEqual([
-			("first", "https://example.com/first.jpg"),
-			("second", "https://example.com/second.png")
-		], matches)
-
-	def test_extract_markdown_links(self):
-		matches = extract_markdown_links(
-			"This is text with a link [to boot dev](https://www.boot.dev)"
-		)
-		self.assertListEqual([("to boot dev", "https://www.boot.dev")], matches)
-
-	def test_extract_multiple_markdown_links(self):
-		matches = extract_markdown_links(
-			"Links to [site one](https://example.com) and [site two](https://example.org)"
-		)
-		self.assertListEqual([
-			("site one", "https://example.com"),
-			("site two", "https://example.org")
-		], matches)
-
-	def test_extract_markdown_links_and_images(self):
-		matches = extract_markdown_links(
-			"A [link](https://example.com) and an ![image](https://example.com/img.jpg)"
-		)
-		self.assertListEqual([("link", "https://example.com")], matches)
-		matches = extract_markdown_images(
-			"A [link](https://example.com) and an ![image](https://example.com/img.jpg)"
-		)
-		self.assertListEqual([("image", "https://example.com/img/jpg)], matches)
+	return result
 
 
-if __name__ == "__main__":
-    unittest.main()
+#split images and links
+
+def split_nodes_image(old_nodes):
+	#Create list to store new nodes
+	new_nodes = []
+	#Loop through each node in old_nodes(an inputted list)
+	for old_node in old_nodes:
+		if old_node.text_type != TextType.TEXT:
+			new_nodes.append(old_node)
+			continue
+
+		images = extract_markdown_images(old_node.text)
+
+		if not images:
+			new_nodes.append(old_node)
+			continue
+		
+		#splitting logic
+		remaining_text = old_node.text
+		for image_alt, text_type, image_url in images:
+			image_markdown = f"![{image_alt}]({image_url})"
+			parts = remaining_text.split(image_markdown, 1)
+			if parts[0]:
+				new_nodes.append(TextNode(parts[0], TextType.TEXT))
+			new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_url))
+			if len(parts) > 1:
+				remaining_text = parts[1]
+			else:
+				remaining_text = ""
+		if remaining_text:
+			new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+
+	return new_nodes
+
+
+def split_nodes_link(old_nodes):
+	        #Create list to store new nodes
+	new_nodes = []
+        #Loop through each node in old_nodes(an inputted list)
+	for old_node in old_nodes:
+		if old_node.text_type != TextType.TEXT:
+			new_nodes.append(old_node)
+			continue
+
+		links = extract_markdown_links(old_node.text)
+
+		if not links:
+			new_nodes.append(old_node)
+			continue
+
+		remaining_text = old_node.text
+		for link_text, text_type, link_url in links:
+			link_markdown = f"[{link_text}]({link_url})"
+			parts = remaining_text.split(link_markdown, 1)
+			if parts[0]:
+				new_nodes.append(TextNode(parts[0], TextType.TEXT))
+			new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+			if len(parts) > 1:
+				remaining_text = parts[1]
+			else:
+				remaining_text = ""
+		if remaining_text:
+			new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+	return new_nodes

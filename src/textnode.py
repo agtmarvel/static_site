@@ -1,26 +1,18 @@
 from enum import Enum
+import re
+from text_types import TextNode, TextType
+from split_delimiter import *
+from extract_links import *
+from htmlnode import *
 
-#syntax
-class TextType(Enum):
-	TEXT = "text"
-	BOLD = "bold"
-	ITALIC = "italic"
-	CODE = "code"
-	LINK = "link"
-	IMAGE = "image"
+#text to textnode functions
+def text_to_textnodes(text):
+	nodes = [TextNode(text, TextType.TEXT)]
+	
+	nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+	nodes = split_nodes_image(nodes)
+	nodes = split_nodes_link(nodes)
 
-class TextNode:
-	def __init__(self, text, text_type, url=None):
-		self.text = text
-		self.text_type = text_type
-		self.url = url
-
-	def __eq__(self, other):
-		return (
-			self.text == other.text and
-			self.text_type == other.text_type and
-			self.url == other.url
-		)
-
-	def __repr__(self):
-		return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
+	return nodes
