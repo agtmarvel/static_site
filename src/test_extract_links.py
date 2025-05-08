@@ -159,7 +159,45 @@ class SplitImagesLinks(unittest.TestCase):
 		self.assertEqual(TextType.IMAGE, new_nodes[3].text_type)
 		self.assertEqual("https://example.com/img.jpg", new_nodes[3].url)
 
+#Block tests
+def test_markdown_to_blocks(self):
+	md = """
+This is **bolded** paragraph
 
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+	blocks = markdown_to_blocks(md)
+	self.assertEqual(
+		blocks,
+		[
+			"This is **bolded** paragraph",
+			"This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+			"- This is a list\n- with items",
+		],
+	)
+
+def test_markdown_to_blocks_with_broken_link(self):
+	md = """
+This is a paragraph
+
+This paragraph has an image [image] https://exam
+ple.com/img.jpg
+
+Another paragraph
+"""
+	blocks = markdown_to_blocks(md)
+	self.assertEqual(
+		blocks,
+		[
+			"This is a paragraph",
+			"This paragraph has an image [image] https://exam\nple.com/img.jpg",
+			"Another paragraph"
+		]
+	)
 
 if __name__ == "__main__":
     unittest.main()

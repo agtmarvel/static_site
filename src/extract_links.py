@@ -91,3 +91,13 @@ def split_nodes_link(old_nodes):
 		if remaining_text:
 			new_nodes.append(TextNode(remaining_text, TextType.TEXT))
 	return new_nodes
+
+
+#markdown to blocks
+
+def markdown_to_blocks(markdown):
+	raw_blocks = markdown.split('\n\n')
+
+	blocks = [block.strip() for block in raw_blocks if block.strip()]
+
+	return blocks
