@@ -1,7 +1,10 @@
 
 from htmlnode import *
 from text_types import TextNode, TextType
+from textnode_to_htmlnode import *
+from textnode import *
 from split_delimiter import *
+from block_types import *
 import re
 from enum import Enum
 
@@ -101,3 +104,105 @@ def markdown_to_blocks(markdown):
 	blocks = [block.strip() for block in raw_blocks if block.strip()]
 
 	return blocks
+
+#helper function
+def text_to_children(text):
+	text_nodes = text_to_textnodes(text)
+ 
+	html_nodes = []
+	for text_node in text_nodes:
+		html_node = text_node_to_html_node(text_node)
+		html_nodes.append(html_node)
+	return html_nodes
+	
+#blocks to html
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    
+    parent = HTMLNode("div", None, None, [])
+    
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.PARAGRAPH:
+            node = HTMLNode("p", None, None, [])
+            node.children = text_to_children(block)
+            parent.children.append(node)
+            
+        elif block_type == BlockType.HEADING:
+            #determining heading level (h1-6)
+            level = 0
+            for char in block:
+                if char == '#':
+                    level += 1 
+                else:
+                    break
+            node = HTMLNode(f"h{level}", None, None, [])
+            content = block[level+1:]
+            node.children = text_to_children(content)
+            parent.children.append(node)
+            if line != lines[-1]:
+                parent.children.append(HTMLNode(None, "\n", None, []))
+            
+        elif block_type == BlockType.CODE:
+            lines = block.split("\n")
+            if len(lines) >= 2:
+                code_content = "\n".join(lines[1:-1])
+                text_node = TextNode(code_content, TextType.TEXT)
+                code_node = text_node_to_html_node(text_node)
+                pre_node - HTMLNode("pre", None, None, [code_node])
+                parent.children.append(pre_node)
+        
+        elif block_type == BlockType.QUOTE:
+            node = HTMLNode("blockquote", None, None, [])
+            lines = block.split("\n")
+            cleaned_lines = []
+            for line in lines:
+                if line.startswith(">"):
+                    cleaned_line = line[1:].lstrip()
+                    cleaned_lines.append(cleaned_line)
+                else:
+                    cleaned_lines.append(line)
+                    
+                content = "\n".join(cleaned_lines)
+                node.children = text_to_children(content)
+                parent.children.append(node)
+                
+        elif block_type == BlockType.ORDERED_LIST:
+            ol_node = HTMLNode("ol", None, None, [])
+            lines = block.split("\n")
+            for line in lines:
+                if not line.strip():
+                    continue
+                position = 0
+                for i, char in enumerate(line):
+                    if char == '.' and i > 0 and line [i-1].isdigit():
+                        position = i + 1
+                        break
+                content = line[position:].strip()
+                li_node = HTMLNode("li", None, None, [])
+                li_node.children = text_to_children(content)
+                ol_node.children.append(li_node)
+            parent.children.append(ol_node)
+            
+        elif block_type == BlockType.UNORDERED_LIST:
+            ul_node = HTMLNode("ul", None, None, [])
+            lines = block.split("\n")
+            for line in lines:
+                if not line.strip():
+                    continue
+                position = 0
+                if line.startswith("- "):
+                    position = 2
+                elif line.startswith("* "):
+                    position = 2
+                elif line.startswith("+ "):
+                    position = 2
+                content = line[position:].strip()
+                li_node = HTMLNode("li", None, None, [])
+                li_node.children = text_to_children(content)
+                ul_node.children.append(li_node)
+            parent.children.append(ul_node)
+	
+        
+    return parent
+            
