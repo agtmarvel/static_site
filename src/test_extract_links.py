@@ -199,6 +199,22 @@ Another paragraph
 		]
 	)
 
+#test markdown title
+def test_title_missing_raises(self):
+	with self.assertRaises(Exception):
+		extract_title("Superman")
+
+def test_title(self):
+	matches = extract_title("# Superman")
+	self.assertEqual(
+		matches,
+		"Superman"
+	)
+
+def test_sub_title(self):
+	with self.assertRaises(Exception):
+		extract_title("## Smashes the Klan")
+
 if __name__ == "__main__":
     unittest.main()
 

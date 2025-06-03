@@ -149,7 +149,7 @@ def markdown_to_html_node(markdown):
                 code_content = "\n".join(lines[1:-1])
                 text_node = TextNode(code_content, TextType.TEXT)
                 code_node = text_node_to_html_node(text_node)
-                pre_node - HTMLNode("pre", None, None, [code_node])
+                pre_node = HTMLNode("pre", None, None, [code_node])
                 parent.children.append(pre_node)
         
         elif block_type == BlockType.QUOTE:
@@ -205,4 +205,13 @@ def markdown_to_html_node(markdown):
 	
         
     return parent
-            
+
+#markdown titles
+
+def extract_title(markdown):
+    lines = markdown.splitlines()
+    for line in lines:
+        if line.startswith("# "):
+            return line.split("# ", 1)[1].strip()
+    raise Exception("No h1 header found in markdown")
+                
